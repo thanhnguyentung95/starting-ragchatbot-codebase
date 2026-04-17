@@ -1,0 +1,6 @@
+[      31ms] [LOG] Loading course stats... @ http://127.0.0.1:8000/script.js?v=9:169
+[      36ms] [LOG] Course data received: {total_courses: 4, course_titles: Array(4)} @ http://127.0.0.1:8000/script.js?v=9:174
+[   16920ms] [LOG] Loading course stats... @ http://127.0.0.1:8000/script.js?v=9:169
+[   16930ms] [LOG] Course data received: {total_courses: 4, course_titles: Array(4)} @ http://127.0.0.1:8000/script.js?v=9:174
+[   30912ms] [LOG] Loading course stats... @ http://127.0.0.1:8000/script.js?v=9:169
+[   30920ms] [LOG] Course data received: {total_courses: 4, course_titles: Array(4)} @ http://127.0.0.1:8000/script.js?v=9:174

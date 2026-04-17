@@ -88,17 +88,28 @@ class VectorStore:
         # Step 3: Search course content
         # Use provided limit or fall back to configured max_results
         search_limit = limit if limit is not None else self.max_results
-        
+
         try:
+            # Guard against ChromaDB raising when n_results exceeds collection size
+            collection_count = self.course_content.count()
+            if collection_count == 0:
+                return SearchResults.empty("No course content has been indexed yet.")
+            actual_limit = min(search_limit, collection_count)
+
             results = self.course_content.query(
                 query_texts=[query],
-                n_results=search_limit,
+                n_results=actual_limit,
                 where=filter_dict
             )
             return SearchResults.from_chroma(results)
         except Exception as e:
             return SearchResults.empty(f"Search error: {str(e)}")
     
+    # Cosine distance threshold: 0 = identical, 1 = orthogonal, 2 = opposite.
+    # Matches with distance > threshold are rejected so gibberish queries don't
+    # silently resolve to the nearest course.
+    _COURSE_NAME_DISTANCE_THRESHOLD = 1.0
+
     def _resolve_course_name(self, course_name: str) -> Optional[str]:
         """Use vector search to find best matching course by name"""
         try:
@@ -106,13 +117,15 @@ class VectorStore:
                 query_texts=[course_name],
                 n_results=1
             )
-            
+
             if results['documents'][0] and results['metadatas'][0]:
-                # Return the title (which is now the ID)
+                distance = results['distances'][0][0] if results['distances'][0] else None
+                if distance is not None and distance > self._COURSE_NAME_DISTANCE_THRESHOLD:
+                    return None
                 return results['metadatas'][0][0]['title']
         except Exception as e:
             print(f"Error resolving course name: {e}")
-        
+
         return None
     
     def _build_filter(self, course_title: Optional[str], lesson_number: Optional[int]) -> Optional[Dict]:
@@ -246,6 +259,26 @@ class VectorStore:
             print(f"Error getting course link: {e}")
             return None
     
+    def get_course_outline(self, course_name: str) -> Optional[Dict[str, Any]]:
+        """Get course outline (title, link, lessons) by course name with fuzzy matching"""
+        import json
+        course_title = self._resolve_course_name(course_name)
+        if not course_title:
+            return None
+        try:
+            results = self.course_catalog.get(ids=[course_title])
+            if results and 'metadatas' in results and results['metadatas']:
+                metadata = results['metadatas'][0]
+                lessons = json.loads(metadata.get('lessons_json', '[]'))
+                return {
+                    'title': metadata['title'],
+                    'course_link': metadata.get('course_link'),
+                    'lessons': lessons
+                }
+        except Exception as e:
+            print(f"Error getting course outline: {e}")
+        return None
+
     def get_lesson_link(self, course_title: str, lesson_number: int) -> Optional[str]:
         """Get lesson link for a given course title and lesson number"""
         import json

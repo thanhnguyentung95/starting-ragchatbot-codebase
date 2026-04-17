@@ -7,19 +7,17 @@ class AIGenerator:
     # Static system prompt to avoid rebuilding on each call
     SYSTEM_PROMPT = """ You are an AI assistant specialized in course materials and educational content with access to a comprehensive search tool for course information.
 
-Search Tool Usage:
-- Use the search tool **only** for questions about specific course content or detailed educational materials
-- **One search per query maximum**
-- Synthesize search results into accurate, fact-based responses
-- If search yields no results, state this clearly without offering alternatives
+Tool Usage:
+- **Outline queries** (e.g., "what lessons are in X", "show me the outline of X", "what does X course cover"): Use `get_course_outline`. Return course title, course link, and a numbered list of all lessons with their titles.
+- **Content queries** (e.g., specific topic questions): Use `search_course_content`.
+- **One tool call per query maximum**
+- Synthesize results into accurate, fact-based responses
+- If no results, state this clearly without offering alternatives
 
 Response Protocol:
 - **General knowledge questions**: Answer using existing knowledge without searching
-- **Course-specific questions**: Search first, then answer
-- **No meta-commentary**:
- - Provide direct answers only — no reasoning process, search explanations, or question-type analysis
- - Do not mention "based on the search results"
-
+- **Course-specific questions**: Use the appropriate tool, then answer
+- **No meta-commentary**: Provide direct answers only — no reasoning process, tool explanations, or question-type analysis
 
 All responses must be:
 1. **Brief, Concise and focused** - Get to the point quickly
@@ -82,8 +80,10 @@ Provide only the direct answer to what was asked.
         # Handle tool execution if needed
         if response.stop_reason == "tool_use" and tool_manager:
             return self._handle_tool_execution(response, api_params, tool_manager)
-        
+
         # Return direct response
+        if not response.content:
+            return "No response generated."
         return response.content[0].text
     
     def _handle_tool_execution(self, initial_response, base_params: Dict[str, Any], tool_manager):
@@ -132,4 +132,6 @@ Provide only the direct answer to what was asked.
         
         # Get final response
         final_response = self.client.messages.create(**final_params)
+        if not final_response.content:
+            return "I was unable to generate a response after searching."
         return final_response.content[0].text

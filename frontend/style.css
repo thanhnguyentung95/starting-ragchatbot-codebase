@@ -103,6 +103,31 @@ header h1 {
     background: var(--text-secondary);
 }
 
+.new-chat-btn {
+    padding: 0.5rem 0;
+    margin-bottom: 1.5rem;
+    background: none;
+    color: var(--text-secondary);
+    border: none;
+    font-size: 0.875rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    text-align: left;
+    transition: color 0.2s ease;
+    display: block;
+}
+
+.new-chat-btn:hover {
+    color: var(--primary-color);
+}
+
+.new-chat-btn:focus {
+    outline: none;
+    color: var(--primary-color);
+}
+
 .sidebar-section {
     margin-bottom: 1.5rem;
 }
@@ -240,9 +265,32 @@ header h1 {
     margin-bottom: 0.25rem;
 }
 
-.sources-content {
-    padding: 0 0.5rem 0.25rem 1.5rem;
-    color: var(--text-secondary);
+.sources-list {
+    list-style: decimal;
+    margin: 0.25rem 0 0.25rem 1rem;
+    padding: 0 0.5rem 0.25rem 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+}
+
+.source-item {
+    line-height: 1.4;
+}
+
+.source-item a,
+.source-item span {
+    display: inline-block;
+    max-width: 100%;
+    color: var(--accent-color, #7c9ef5);
+    text-decoration: none;
+    word-break: break-word;
+    border-bottom: 1px dashed currentColor;
+}
+
+.source-item a:hover {
+    color: var(--text-primary);
+    border-bottom-style: solid;
 }
 
 /* Markdown formatting styles */
