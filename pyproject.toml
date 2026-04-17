@@ -19,9 +19,30 @@ dev = [
     "pytest>=9.0.3",
     "pytest-mock>=3.15.1",
     "httpx>=0.28.0",
+    "black>=25.0.0",
+    "isort>=5.13.0",
+    "flake8>=7.0.0",
 ]
 
 [tool.pytest.ini_options]
 testpaths = ["backend/tests"]
 pythonpath = ["backend"]
 addopts = "-v --tb=short"
+
+[tool.black]
+line-length = 88
+target-version = ["py313"]
+include = '\.pyi?$'
+exclude = '''
+/(
+    \.git
+  | \.venv
+  | chroma_db
+  | __pycache__
+)/
+'''
+
+[tool.isort]
+profile = "black"
+line_length = 88
+known_first_party = ["config", "rag_system", "vector_store", "ai_generator", "document_processor", "search_tools", "session_manager", "models"]

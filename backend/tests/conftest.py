@@ -1,24 +1,26 @@
-import pytest
-import sys
 import os
+import sys
 from unittest.mock import MagicMock, patch
 from fastapi.testclient import TestClient
+
+import pytest
 
 # Make backend modules and tests/ helpers importable
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 sys.path.insert(0, os.path.dirname(__file__))
 
-from models import Course, Lesson, CourseChunk  # noqa: E402
-from vector_store import VectorStore  # noqa: E402
-from search_tools import CourseSearchTool  # noqa: E402
-from ai_generator import AIGenerator  # noqa: E402
 from response_builders import make_direct_response, make_tool_use_response  # noqa: E402
 
+from ai_generator import AIGenerator  # noqa: E402
+from models import Course, CourseChunk, Lesson  # noqa: E402
+from search_tools import CourseSearchTool  # noqa: E402
+from vector_store import VectorStore  # noqa: E402
 
 # ---------------------------------------------------------------------------
 # Embedding stub — satisfies ChromaDB 1.0.x EmbeddingFunction interface
 # without downloading any ML model
 # ---------------------------------------------------------------------------
+
 
 class _MockEmbeddingFunction:
     """Minimal stub accepted by ChromaDB's embedding function validation"""
@@ -57,9 +59,21 @@ TEST_COURSE = Course(
     course_link="https://example.com/course",
     instructor="Test Instructor",
     lessons=[
-        Lesson(lesson_number=1, title="Getting Started", lesson_link="https://example.com/lesson/1"),
-        Lesson(lesson_number=2, title="Tool Use", lesson_link="https://example.com/lesson/2"),
-        Lesson(lesson_number=3, title="Advanced Topics", lesson_link="https://example.com/lesson/3"),
+        Lesson(
+            lesson_number=1,
+            title="Getting Started",
+            lesson_link="https://example.com/lesson/1",
+        ),
+        Lesson(
+            lesson_number=2,
+            title="Tool Use",
+            lesson_link="https://example.com/lesson/2",
+        ),
+        Lesson(
+            lesson_number=3,
+            title="Advanced Topics",
+            lesson_link="https://example.com/lesson/3",
+        ),
     ],
 )
 
@@ -87,6 +101,7 @@ TEST_CHUNKS = [
 # ---------------------------------------------------------------------------
 # VectorStore fixtures
 # ---------------------------------------------------------------------------
+
 
 @pytest.fixture
 def seeded_vector_store(tmp_path):
@@ -121,6 +136,7 @@ def course_search_tool(seeded_vector_store):
 # ---------------------------------------------------------------------------
 # AIGenerator fixtures
 # ---------------------------------------------------------------------------
+
 
 @pytest.fixture
 def ai_generator_direct():

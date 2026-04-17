@@ -1,6 +1,7 @@
 """
 Reusable Anthropic API response mock builders for test assertions.
 """
+
 from unittest.mock import MagicMock
 
 
