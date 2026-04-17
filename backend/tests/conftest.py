@@ -2,6 +2,7 @@ import pytest
 import sys
 import os
 from unittest.mock import MagicMock, patch
+from fastapi.testclient import TestClient
 
 # Make backend modules and tests/ helpers importable
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
@@ -128,6 +129,26 @@ def ai_generator_direct():
     gen.client = MagicMock()
     gen.client.messages.create.return_value = make_direct_response()
     return gen
+
+
+# ---------------------------------------------------------------------------
+# RAGSystem mock — shared by API endpoint tests
+# ---------------------------------------------------------------------------
+
+@pytest.fixture
+def mock_rag_system():
+    """Pre-wired RAGSystem mock for API endpoint tests."""
+    mock = MagicMock()
+    mock.session_manager.create_session.return_value = "test-session-abc"
+    mock.query.return_value = (
+        "Claude is an AI assistant made by Anthropic.",
+        [{"label": "Introduction to Claude API - Lesson 1", "link": "https://example.com/lesson/1"}],
+    )
+    mock.get_course_analytics.return_value = {
+        "total_courses": 2,
+        "course_titles": ["Introduction to Claude API", "Advanced Techniques"],
+    }
+    return mock
 
 
 @pytest.fixture
