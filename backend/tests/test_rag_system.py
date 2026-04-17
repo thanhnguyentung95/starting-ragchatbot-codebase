@@ -1,13 +1,17 @@
-import pytest
 from unittest.mock import MagicMock
+
+import pytest
 from response_builders import make_direct_response, make_tool_use_response
 
 
 def _make_rag(tmp_path, suffix="rag_chroma"):
     """Create a RAGSystem with a throwaway ChromaDB path (embedding patch must already be active)"""
-    from rag_system import RAGSystem
     from config import Config
-    return RAGSystem(Config(ANTHROPIC_API_KEY="test-key", CHROMA_PATH=str(tmp_path / suffix)))
+    from rag_system import RAGSystem
+
+    return RAGSystem(
+        Config(ANTHROPIC_API_KEY="test-key", CHROMA_PATH=str(tmp_path / suffix))
+    )
 
 
 def _inject_store(rag, store):
@@ -31,7 +35,9 @@ class TestRAGSystemQuery:
         assert isinstance(response, str)
         assert isinstance(sources, list)
 
-    def test_query_passes_non_empty_tool_definitions_to_ai_generator(self, seeded_vector_store, tmp_path):
+    def test_query_passes_non_empty_tool_definitions_to_ai_generator(
+        self, seeded_vector_store, tmp_path
+    ):
         """AI generator must receive tools so Claude can decide to search"""
         rag = _make_rag(tmp_path)
         _inject_store(rag, seeded_vector_store)
@@ -44,7 +50,9 @@ class TestRAGSystemQuery:
         assert "tools" in kwargs
         assert len(kwargs["tools"]) > 0
 
-    def test_query_content_question_populates_sources_via_tool_execution(self, seeded_vector_store, tmp_path):
+    def test_query_content_question_populates_sources_via_tool_execution(
+        self, seeded_vector_store, tmp_path
+    ):
         """When Claude invokes search_course_content, sources must be returned to the caller"""
         rag = _make_rag(tmp_path)
         _inject_store(rag, seeded_vector_store)
@@ -52,14 +60,18 @@ class TestRAGSystemQuery:
         # Wire the mocked Anthropic client: first call → tool use, second → final text
         rag.ai_generator.client = MagicMock()
         rag.ai_generator.client.messages.create.side_effect = [
-            make_tool_use_response(tool_name="search_course_content", tool_input={"query": "Claude"}),
+            make_tool_use_response(
+                tool_name="search_course_content", tool_input={"query": "Claude"}
+            ),
             make_direct_response("Claude is made by Anthropic."),
         ]
 
         _, sources = rag.query("Tell me about Claude")
         assert len(sources) > 0
 
-    def test_query_empty_vector_store_does_not_raise(self, empty_vector_store, tmp_path):
+    def test_query_empty_vector_store_does_not_raise(
+        self, empty_vector_store, tmp_path
+    ):
         """Cold start (no indexed docs) must not produce an exception or HTTP 500"""
         rag = _make_rag(tmp_path)
         _inject_store(rag, empty_vector_store)
@@ -69,7 +81,9 @@ class TestRAGSystemQuery:
         response, sources = rag.query("What is in this course?")
         assert isinstance(response, str)
 
-    def test_query_updates_session_history_after_exchange(self, seeded_vector_store, tmp_path):
+    def test_query_updates_session_history_after_exchange(
+        self, seeded_vector_store, tmp_path
+    ):
         rag = _make_rag(tmp_path)
         _inject_store(rag, seeded_vector_store)
         rag.ai_generator = MagicMock()

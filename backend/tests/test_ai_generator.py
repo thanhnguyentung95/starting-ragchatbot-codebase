@@ -1,7 +1,9 @@
-import pytest
 from unittest.mock import MagicMock
-from ai_generator import AIGenerator
+
+import pytest
 from response_builders import make_direct_response, make_tool_use_response
+
+from ai_generator import AIGenerator
 
 
 class TestGenerateResponseDirect:
@@ -11,8 +13,13 @@ class TestGenerateResponseDirect:
         assert result == "Direct answer."
 
     def test_tool_choice_auto_set_when_tools_provided(self, ai_generator_direct):
-        tools = [{"name": "search_course_content", "description": "search",
-                  "input_schema": {"type": "object", "properties": {}, "required": []}}]
+        tools = [
+            {
+                "name": "search_course_content",
+                "description": "search",
+                "input_schema": {"type": "object", "properties": {}, "required": []},
+            }
+        ]
         ai_generator_direct.generate_response(query="test", tools=tools)
         kwargs = ai_generator_direct.client.messages.create.call_args[1]
         assert kwargs["tool_choice"] == {"type": "auto"}
@@ -30,7 +37,9 @@ class TestHandleToolExecution:
         gen = AIGenerator(api_key="test", model="test")
         gen.client = MagicMock()
         gen.client.messages.create.side_effect = [
-            make_tool_use_response(tool_name="search_course_content", tool_input={"query": "Claude API"}),
+            make_tool_use_response(
+                tool_name="search_course_content", tool_input={"query": "Claude API"}
+            ),
             make_direct_response("Final answer."),
         ]
         tool_manager = MagicMock()
@@ -42,7 +51,9 @@ class TestHandleToolExecution:
             tool_manager=tool_manager,
         )
 
-        tool_manager.execute_tool.assert_called_once_with("search_course_content", query="Claude API")
+        tool_manager.execute_tool.assert_called_once_with(
+            "search_course_content", query="Claude API"
+        )
         assert result == "Final answer."
 
     def test_tool_result_block_included_in_second_api_call(self):
@@ -58,7 +69,9 @@ class TestHandleToolExecution:
 
         gen.generate_response(query="test", tools=[{}], tool_manager=tool_manager)
 
-        second_call_messages = gen.client.messages.create.call_args_list[1][1]["messages"]
+        second_call_messages = gen.client.messages.create.call_args_list[1][1][
+            "messages"
+        ]
         # Last message in the second call should be the user-role tool_result
         last_msg = second_call_messages[-1]
         assert last_msg["role"] == "user"
@@ -78,6 +91,8 @@ class TestHandleToolExecution:
         tool_manager = MagicMock()
         tool_manager.execute_tool.return_value = "result"
 
-        result = gen.generate_response(query="test", tools=[{}], tool_manager=tool_manager)
+        result = gen.generate_response(
+            query="test", tools=[{}], tool_manager=tool_manager
+        )
         assert isinstance(result, str)
         assert len(result) > 0
