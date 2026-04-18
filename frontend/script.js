@@ -35,15 +35,15 @@ function applyTheme(theme) {
     document.body.setAttribute('data-theme', theme);
     localStorage.setItem('theme', theme);
     if (themeToggle) {
-        themeToggle.setAttribute(
-            'aria-label',
-            theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'
-        );
+        const nextLabels = { dark: 'light', light: 'beautiful', beautiful: 'dark' };
+        themeToggle.setAttribute('aria-label', `Switch to ${nextLabels[theme]} mode`);
+        themeToggle.setAttribute('title', `Switch to ${nextLabels[theme]} mode`);
     }
 }
 
 function toggleTheme() {
-    applyTheme(currentTheme === 'dark' ? 'light' : 'dark');
+    const next = { dark: 'light', light: 'beautiful', beautiful: 'dark' };
+    applyTheme(next[currentTheme]);
 }
 
 // Event Listeners
